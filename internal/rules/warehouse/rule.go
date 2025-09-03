@@ -44,24 +44,33 @@ func (r *Rule) SetMRContext(mrCtx *shared.MRContext) {
 }
 
 // GetCoveredLines returns which line ranges this rule validates in a file
+// FIXED: Only covers warehouse-related sections, not the entire file
 func (r *Rule) GetCoveredLines(filePath string, fileContent string) []shared.LineRange {
 	if !r.isWarehouseFile(filePath) {
 		return nil // This rule doesn't apply to non-warehouse files
 	}
 
-	// Warehouse rule covers the entire warehouse file
-	totalLines := shared.CountLines(fileContent)
-	if totalLines == 0 {
+	if fileContent == "" {
 		return nil
 	}
 
-	return []shared.LineRange{
-		{
-			StartLine: 1,
-			EndLine:   totalLines,
-			FilePath:  filePath,
-		},
+	// Parse YAML to identify warehouse-related sections only
+	yamlResult := shared.ParseYAMLWithLineNumbers(filePath, fileContent)
+	var coveredRanges []shared.LineRange
+
+	// Cover the "warehouses:" section if it exists
+	if warehouseSection := yamlResult.GetSectionByName("warehouses"); warehouseSection != nil {
+		coveredRanges = append(coveredRanges, warehouseSection.ToLineRange())
 	}
+
+	// Cover warehouse-related service account configurations
+	if saSection := yamlResult.GetSectionByName("service_account"); saSection != nil {
+		// Only cover service account fields that affect warehouse behavior
+		// For now, we'll include the entire service_account section but this could be refined further
+		coveredRanges = append(coveredRanges, saSection.ToLineRange())
+	}
+
+	return coveredRanges
 }
 
 // ValidateLines validates the specified line ranges in a warehouse file
@@ -70,10 +79,9 @@ func (r *Rule) ValidateLines(filePath string, fileContent string, lineRanges []s
 		return shared.Approve, "Not a warehouse file"
 	}
 
-	// If we don't have analyzer or MR context, fall back to simplified validation
+	// If we don't have analyzer or MR context, be conservative and require manual review
 	if r.analyzer == nil || r.mrCtx == nil {
-
-		return shared.Approve, "Warehouse file validated (simplified validation - no context)"
+		return shared.ManualReview, "Warehouse validation requires full context - manual review needed"
 	}
 
 	// Use the analyzer to detect warehouse changes
@@ -106,9 +114,10 @@ func (r *Rule) ValidateLines(filePath string, fileContent string, lineRanges []s
 		}
 	}
 
-	// If this file has no warehouse-related changes, approve it
+	// FIXED: Only validate changes within our declared coverage scope
+	// If this file has no warehouse-related changes in the sections we cover, approve those sections
 	if !fileHasChanges {
-		return shared.Approve, "No warehouse changes detected in this file"
+		return shared.Approve, "No warehouse changes detected in covered warehouse sections"
 	}
 
 	// If there are non-warehouse changes, require manual review
