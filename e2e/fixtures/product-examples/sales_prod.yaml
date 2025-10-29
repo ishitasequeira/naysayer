@@ -1,0 +1,36 @@
+---
+name: sales
+kind: source-aligned
+rover_group: example-source-sales
+warehouses:
+- type: user
+  size: SMALL
+- type: service_account
+  size: XSMALL
+service_account:
+  dbt: true
+tags:
+  data_product: sales
+data_product_db:
+- database: sales_db
+  presentation_schemas:
+  - name: general_marts
+    consumers:
+    - kind: consumer_group
+      name: example-consumer-sales-general
+    - kind: service_account
+      name: sales_reporting_prod_appuser
+  - name: analytics_marts
+    consumers:
+    - kind: consumer_group
+      name: example-consumer-sales-analytics
+    - kind: data_product
+      name: analytics
+  - name: forecasting_marts
+    consumers:
+    - kind: consumer_group
+      name: example-consumer-sales-forecasting
+    - kind: service_account
+      name: sales_bi_prod_appuser
+    - kind: data_product
+      name: finance

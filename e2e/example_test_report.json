@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "total_tests": 2,
+    "passed_tests": 2,
+    "failed_tests": 0,
+    "duration": 200000000,
+    "success_rate": 100,
+    "tag_breakdown": {
+      "demo": 1,
+      "example": 2
+    }
+  },
+  "results": [
+    {
+      "Name": "Example_Test_1",
+      "Description": "Example test for runner demo",
+      "Passed": true,
+      "Error": null,
+      "Duration": 100000000,
+      "ExpectedDecision": "approve",
+      "ActualDecision": "approve",
+      "Tags": [
+        "example"
+      ],
+      "Timestamp": "2025-10-28T13:08:58.603544-04:00"
+    },
+    {
+      "Name": "Example_Test_2",
+      "Description": "Another example test",
+      "Passed": true,
+      "Error": null,
+      "Duration": 100000000,
+      "ExpectedDecision": "approve",
+      "ActualDecision": "approve",
+      "Tags": [
+        "example",
+        "demo"
+      ],
+      "Timestamp": "2025-10-28T13:08:58.603544-04:00"
+    }
+  ],
+  "generated_at": "2025-10-28T13:08:58.603545-04:00"
+}

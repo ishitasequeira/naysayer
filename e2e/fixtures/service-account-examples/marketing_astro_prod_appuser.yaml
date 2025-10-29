@@ -1,0 +1,4 @@
+name: marketing_astro_prod_appuser
+comment: "Example Astro service account for testing"
+email: noreply@example.com
+role: MARKETING_ASTRO_ROLE
